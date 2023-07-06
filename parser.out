@@ -1,0 +1,215 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> expression
+Rule 1     expression -> termo
+Rule 2     expression -> expression OU termo
+Rule 3     termo -> fator
+Rule 4     termo -> termo fator
+Rule 5     fator -> atom
+Rule 6     fator -> fator ESTRELA_KLEENE
+Rule 7     atom -> SIMBOLO
+Rule 8     atom -> PARENTESE_ESQ expression PARENTESE_DIR
+
+Terminals, with rules where they appear
+
+ESTRELA_KLEENE       : 6
+OU                   : 2
+PARENTESE_DIR        : 8
+PARENTESE_ESQ        : 8
+SIMBOLO              : 7
+error                : 
+
+Nonterminals, with rules where they appear
+
+atom                 : 5
+expression           : 2 8 0
+fator                : 3 4 6
+termo                : 1 2 4
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . expression
+    (1) expression -> . termo
+    (2) expression -> . expression OU termo
+    (3) termo -> . fator
+    (4) termo -> . termo fator
+    (5) fator -> . atom
+    (6) fator -> . fator ESTRELA_KLEENE
+    (7) atom -> . SIMBOLO
+    (8) atom -> . PARENTESE_ESQ expression PARENTESE_DIR
+
+    SIMBOLO         shift and go to state 5
+    PARENTESE_ESQ   shift and go to state 6
+
+    expression                     shift and go to state 1
+    termo                          shift and go to state 2
+    fator                          shift and go to state 3
+    atom                           shift and go to state 4
+
+state 1
+
+    (0) S' -> expression .
+    (2) expression -> expression . OU termo
+
+    OU              shift and go to state 7
+
+
+state 2
+
+    (1) expression -> termo .
+    (4) termo -> termo . fator
+    (5) fator -> . atom
+    (6) fator -> . fator ESTRELA_KLEENE
+    (7) atom -> . SIMBOLO
+    (8) atom -> . PARENTESE_ESQ expression PARENTESE_DIR
+
+    OU              reduce using rule 1 (expression -> termo .)
+    $end            reduce using rule 1 (expression -> termo .)
+    PARENTESE_DIR   reduce using rule 1 (expression -> termo .)
+    SIMBOLO         shift and go to state 5
+    PARENTESE_ESQ   shift and go to state 6
+
+    fator                          shift and go to state 8
+    atom                           shift and go to state 4
+
+state 3
+
+    (3) termo -> fator .
+    (6) fator -> fator . ESTRELA_KLEENE
+
+    SIMBOLO         reduce using rule 3 (termo -> fator .)
+    PARENTESE_ESQ   reduce using rule 3 (termo -> fator .)
+    OU              reduce using rule 3 (termo -> fator .)
+    $end            reduce using rule 3 (termo -> fator .)
+    PARENTESE_DIR   reduce using rule 3 (termo -> fator .)
+    ESTRELA_KLEENE  shift and go to state 9
+
+
+state 4
+
+    (5) fator -> atom .
+
+    ESTRELA_KLEENE  reduce using rule 5 (fator -> atom .)
+    SIMBOLO         reduce using rule 5 (fator -> atom .)
+    PARENTESE_ESQ   reduce using rule 5 (fator -> atom .)
+    OU              reduce using rule 5 (fator -> atom .)
+    $end            reduce using rule 5 (fator -> atom .)
+    PARENTESE_DIR   reduce using rule 5 (fator -> atom .)
+
+
+state 5
+
+    (7) atom -> SIMBOLO .
+
+    ESTRELA_KLEENE  reduce using rule 7 (atom -> SIMBOLO .)
+    SIMBOLO         reduce using rule 7 (atom -> SIMBOLO .)
+    PARENTESE_ESQ   reduce using rule 7 (atom -> SIMBOLO .)
+    OU              reduce using rule 7 (atom -> SIMBOLO .)
+    $end            reduce using rule 7 (atom -> SIMBOLO .)
+    PARENTESE_DIR   reduce using rule 7 (atom -> SIMBOLO .)
+
+
+state 6
+
+    (8) atom -> PARENTESE_ESQ . expression PARENTESE_DIR
+    (1) expression -> . termo
+    (2) expression -> . expression OU termo
+    (3) termo -> . fator
+    (4) termo -> . termo fator
+    (5) fator -> . atom
+    (6) fator -> . fator ESTRELA_KLEENE
+    (7) atom -> . SIMBOLO
+    (8) atom -> . PARENTESE_ESQ expression PARENTESE_DIR
+
+    SIMBOLO         shift and go to state 5
+    PARENTESE_ESQ   shift and go to state 6
+
+    expression                     shift and go to state 10
+    termo                          shift and go to state 2
+    fator                          shift and go to state 3
+    atom                           shift and go to state 4
+
+state 7
+
+    (2) expression -> expression OU . termo
+    (3) termo -> . fator
+    (4) termo -> . termo fator
+    (5) fator -> . atom
+    (6) fator -> . fator ESTRELA_KLEENE
+    (7) atom -> . SIMBOLO
+    (8) atom -> . PARENTESE_ESQ expression PARENTESE_DIR
+
+    SIMBOLO         shift and go to state 5
+    PARENTESE_ESQ   shift and go to state 6
+
+    termo                          shift and go to state 11
+    fator                          shift and go to state 3
+    atom                           shift and go to state 4
+
+state 8
+
+    (4) termo -> termo fator .
+    (6) fator -> fator . ESTRELA_KLEENE
+
+    SIMBOLO         reduce using rule 4 (termo -> termo fator .)
+    PARENTESE_ESQ   reduce using rule 4 (termo -> termo fator .)
+    OU              reduce using rule 4 (termo -> termo fator .)
+    $end            reduce using rule 4 (termo -> termo fator .)
+    PARENTESE_DIR   reduce using rule 4 (termo -> termo fator .)
+    ESTRELA_KLEENE  shift and go to state 9
+
+
+state 9
+
+    (6) fator -> fator ESTRELA_KLEENE .
+
+    ESTRELA_KLEENE  reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+    SIMBOLO         reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+    PARENTESE_ESQ   reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+    OU              reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+    $end            reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+    PARENTESE_DIR   reduce using rule 6 (fator -> fator ESTRELA_KLEENE .)
+
+
+state 10
+
+    (8) atom -> PARENTESE_ESQ expression . PARENTESE_DIR
+    (2) expression -> expression . OU termo
+
+    PARENTESE_DIR   shift and go to state 12
+    OU              shift and go to state 7
+
+
+state 11
+
+    (2) expression -> expression OU termo .
+    (4) termo -> termo . fator
+    (5) fator -> . atom
+    (6) fator -> . fator ESTRELA_KLEENE
+    (7) atom -> . SIMBOLO
+    (8) atom -> . PARENTESE_ESQ expression PARENTESE_DIR
+
+    OU              reduce using rule 2 (expression -> expression OU termo .)
+    $end            reduce using rule 2 (expression -> expression OU termo .)
+    PARENTESE_DIR   reduce using rule 2 (expression -> expression OU termo .)
+    SIMBOLO         shift and go to state 5
+    PARENTESE_ESQ   shift and go to state 6
+
+    fator                          shift and go to state 8
+    atom                           shift and go to state 4
+
+state 12
+
+    (8) atom -> PARENTESE_ESQ expression PARENTESE_DIR .
+
+    ESTRELA_KLEENE  reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+    SIMBOLO         reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+    PARENTESE_ESQ   reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+    OU              reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+    $end            reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+    PARENTESE_DIR   reduce using rule 8 (atom -> PARENTESE_ESQ expression PARENTESE_DIR .)
+

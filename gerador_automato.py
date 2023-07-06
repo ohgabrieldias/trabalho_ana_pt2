@@ -115,7 +115,7 @@ def concatenacao(a1, a2):
     # Atualiza a primeira transição das transições para ter o estado final de a1 como estado inicial de a2
     for estado in transicoes:
         for simbolo in transicoes[estado]:
-            print(transicoes[estado][simbolo], "==" ,a1.estados_finais[0])
+            # print(transicoes[estado][simbolo], "==" ,a1.estados_finais[0])
             if transicoes[estado][simbolo] == [a1.estados_finais[0]]:  
                 transicoes[estado][simbolo] = [a2.estados_iniciais[0]]
 
