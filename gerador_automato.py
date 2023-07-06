@@ -103,7 +103,8 @@ def concatenacao(a1, a2):
     estados_finais = a2.estados_finais
     novo_estado = a2.estados_iniciais[0]  # Estado inicial de a2 como novo estado
 
-    conjunto_estados = a1.estados_iniciais + [novo_estado] + a2.estados_finais
+    conjunto_estados =  a1.conjunto_estados + a2.conjunto_estados
+    conjunto_estados.remove(a1.estados_finais[0])  # Remove o estado final de a1 do conjunto de estados
 
     transicoes = {}
     for estado, transicoes_estado in a1.transicoes.items():
@@ -121,49 +122,7 @@ def concatenacao(a1, a2):
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 ##############################################################################################################
-def concatenacao_v2(a1, a2):
-    estados_iniciais = a1.estados_iniciais
-    estados_finais = a2.estados_finais
-    # cria um novo estado contatenando os estados finais do a1 com os estados iniciais do a2
-    novo_estado = a1.estados_iniciais[0] + a2.estados_finais[0]
-    # adiciona o novo estado ao conjunto de estados
-    conjunto_estados = a1.estados_iniciais + [novo_estado] + a2.estados_finais
-
-    transicoes  = a1.transicoes
-    for estado in conjunto_estados:
-        estado_atual = estado
-        if estado in a1.transicoes:
-            for simbolo in a1.transicoes[estado]:
-                transicoes[estado_atual][simbolo] = novo_estado
-    for estado in a2.estados_iniciais:
-        transicoes[novo_estado] = a2.transicoes[estado]
-
-    return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
-
 ###############################################################################################################
-def concatenacao_afnd(a2, a1):
-    estados_iniciais = a1.estados_iniciais
-    estados_finais = a2.estados_finais
-
-    #print(estados_iniciais)
-    #print(estados_finais)
-    transicoes = {}
-    for estado in a1.estados_finais:
-        if estado in a1.transicoes:
-            transicoes[estado] = a1.transicoes[estado]
-
-    for estado in a2.estados_iniciais:
-        if estado in a2.transicoes:
-            if estado in transicoes:
-                for simbolo in a2.transicoes[estado]:
-                    if simbolo in transicoes[estado]:
-                        transicoes[estado][simbolo] += a2.transicoes[estado][simbolo]
-                    else:
-                        transicoes[estado][simbolo] = a2.transicoes[estado][simbolo]
-            else:
-                transicoes[estado] = a2.transicoes[estado]
-
-    return AFND(estados_iniciais, estados_finais, transicoes)
 ##############################################################################################################
 def uniao_afnd(a1, a2):
     estado_inicial = "s0"
@@ -206,18 +165,16 @@ def criar_afnd_simbolo(simbolo):
     transicoes = {}
     transicoes[estado_inicial] = {}
     transicoes[estado_inicial][simbolo] = [estado_final]
-    #print(transicoes)
-    #print(f"({estado_inicial} --({transicoes[estado_inicial]})--> {estado_final})")
     return AFND([estado_inicial],conjunto_estados, estados_finais, transicoes)
 ##### printa AFDN ############################################################################################
 def print_afdn(afnd):
-    print("Estados Iniciais:", afnd.estados_iniciais)
-    print("Estados Finais:", afnd.estados_finais)
-    print("Conjunto de Estados:", afnd.conjunto_estados)
-    print("Transições:")
+    print("Estados Iniciais(s):", afnd.estados_iniciais)
+    print("Estados Finais (F):", afnd.estados_finais)
+    print("Conjunto de Estados (K):", afnd.conjunto_estados)
+    print("Transições (δ):")
     for estado, transicoes in afnd.transicoes.items():
         for simbolo, destinos in transicoes.items():
-            print(f"({estado} --({simbolo})--> {destinos})")
+            print(f"δ:({estado} --({simbolo})--> {destinos})")
     print("\n")
 ##############################################################################################################
 def gerar_automato(arvore):
@@ -251,7 +208,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(0001001)"
+expressao = "(10011)"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
