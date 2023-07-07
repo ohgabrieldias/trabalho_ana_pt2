@@ -1,3 +1,4 @@
+import os
 import random
 import ply.lex as lex
 import ply.yacc as yacc
@@ -98,6 +99,52 @@ class AFND:
         self.conjunto_estados = conjunto_estados
         self.transicoes = δ
 ##############################################################################################################
+def concatenacaov2(a1, a2):
+    estados_iniciais = a1.estados_iniciais
+    estados_finais = a2.estados_finais
+    novo_estado = a1.estados_finais[0] + a2.estados_iniciais[0]  # Estado inicial de a2 como novo estado
+
+    conjunto_estados =  a1.conjunto_estados + [novo_estado] + a2.conjunto_estados
+    conjunto_estados.remove(a1.estados_finais[0])  # Remove o estado final de a1 do conjunto de estados
+    conjunto_estados.remove(a2.estados_iniciais[0]) # Remove o estado inicial de a2 do conjunto de estados
+
+    transicoes = {}
+    transicoes_tmp = {}
+    transicoes_tmp[novo_estado] = {}
+
+    # Atualiza o nome dos estados finais de a1 para o novo nome
+    for estado in a1.transicoes:
+        for simbolo in a1.transicoes[estado]:
+            if a1.transicoes[estado][simbolo] == [a1.estados_finais[0]]: 
+                a1.transicoes[estado][simbolo] = [novo_estado]
+
+    a1.estados_finais[0] = novo_estado
+
+    for estado in a2.transicoes:
+        for simbolo in a2.transicoes[estado]:
+            if estado == a2.estados_iniciais[0]:
+                transicoes_tmp[novo_estado][simbolo] = [a2.estados_finais[0]]
+                del a2.transicoes[estado][simbolo]
+                break
+
+    a2.transicoes[novo_estado] = transicoes_tmp[novo_estado]
+    a2.estados_iniciais[0] = novo_estado
+
+    # Copia as transições de a1 e a2 para o novo autômato
+    for estado, transicoes_estado in a1.transicoes.items():
+        transicoes[estado] = transicoes_estado.copy()
+   
+    for estado, transicoes_estado in a2.transicoes.items():
+        transicoes[estado] = transicoes_estado.copy()
+
+    # Atualiza a primeira transição das transições para ter o estado final de a1 como estado inicial de a2
+    for estado in transicoes:
+        for simbolo in transicoes[estado]:
+            if transicoes[estado][simbolo] == [a1.estados_finais[0]]:  # Testa se o proximo estado é o estado final de a1
+                transicoes[estado][simbolo] = [a2.estados_iniciais[0]]  # Atualiza o estado final de a1 para o estado inicial de a2
+
+    return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
+##############################################################################################################
 def concatenacao(a1, a2):
     estados_iniciais = a1.estados_iniciais
     estados_finais = a2.estados_finais
@@ -121,8 +168,6 @@ def concatenacao(a1, a2):
                 transicoes[estado][simbolo] = [a2.estados_iniciais[0]]
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
-##############################################################################################################
-###############################################################################################################
 ##############################################################################################################
 def uniao_afnd(a1, a2):
     estado_inicial = "s0"
@@ -184,7 +229,7 @@ def gerar_automato(arvore):
             # print_afdn(afdn_esquerdo)
             afdn_direito = gerar_automato(arvore.children[1])
             # print_afdn(afdn_direito)
-            return concatenacao(afdn_esquerdo,afdn_direito)
+            return concatenacaov2(afdn_esquerdo,afdn_direito)
         elif arvore.value == "OU":
             afdn_esquerdo = gerar_automato(arvore.children[0])
             afdn_direito = gerar_automato(arvore.children[1])
@@ -197,7 +242,25 @@ def gerar_automato(arvore):
             return criar_afnd_simbolo(simbolo)
     return None
 
+##############################################################################################################
+def save_afdn_to_file(afnd, filename):
+    current_directory = os.getcwd()
+    file_path = os.path.join(current_directory, filename)
+    with open(file_path, 'w') as file:
+        file.write("M = (K, Σ, δ, s, F)\n")
+        file.write("M = (K"+ str(afnd.conjunto_estados)+", Σ[0,1], δ, s"+ str(afnd.estados_iniciais)+", F"+ str(afnd.estados_finais)+")\n")
+        file.write("Transições (δ):\n")
+        for estado, transicoes in afnd.transicoes.items():
+            for simbolo, destinos in transicoes.items():
+                file.write(f"δ:({estado} --({simbolo})--> {destinos})\n")
+        file.write("\n")
+        file.write("Conjunto de estados Iniciais(s): " + str(afnd.estados_iniciais) + "\n")
+        file.write("Conjunto de estados Finais (F): " + str(afnd.estados_finais) + "\n")
+        file.write("Conjunto de estados (K): " + str(afnd.conjunto_estados) + "\n")
+       
+     
 
+##############################################################################################################
 # Função auxiliar para imprimir a árvore sintática
 def print_tree(node, level=0):
     if isinstance(node, Node):
@@ -208,7 +271,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(10011)"
+expressao = "(01001)"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
@@ -217,3 +280,4 @@ resultado = parser.parse(expressao)
 # print_tree(resultado)
 automato = gerar_automato(resultado)
 print_afdn(automato)
+save_afdn_to_file(automato, "automato.txt")
