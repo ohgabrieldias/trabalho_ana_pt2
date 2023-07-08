@@ -1,33 +1,22 @@
-def fecho_kleene_afnd(afnd):
-    # Adicionando um novo estado inicial e uma transição vazia para o antigo estado inicial
-    afnd['estados'].insert(0, 'q0')
-    afnd['transicoes'].insert(0, {'origem': 'q0', 'simbolo': '', 'destino': afnd['estado_inicial']})
+def fecho_kleene(afnd):
+    estados_iniciais = afnd.estados_iniciais
+    estados_finais = afnd.estados_finais
 
-    # Adicionando uma nova transição vazia dos estados finais para o estado inicial
-    for estado_final in afnd['estados_finais']:
-        afnd['transicoes'].append({'origem': estado_final, 'simbolo': '', 'destino': afnd['estado_inicial']})
+    novo_estado = 'q0'  # Novo estado inicial
 
-    # Adicionando uma nova transição vazia dos estados finais para os outros estados
-    for estado_final in afnd['estados_finais']:
-        for estado in afnd['estados']:
-            afnd['transicoes'].append({'origem': estado_final, 'simbolo': '', 'destino': estado})
+    conjunto_estados = afnd.conjunto_estados + [novo_estado]
 
-    # Atualizando os estados finais para incluir o novo estado inicial
-    afnd['estados_finais'].append('q0')
+    transicoes = {}
+    for estado, transicoes_estado in afnd.transicoes.items():
+        transicoes[estado] = transicoes_estado.copy()
 
-    return afnd
-
-# Exemplo de uso
-afnd = {
-    'estados': ['q1', 'q2'],
-    'simbolos': ['0', '1'],
-    'estado_inicial': 'q1',
-    'estados_finais': ['q2'],
-    'transicoes': [
-        {'origem': 'q1', 'simbolo': '0', 'destino': 'q2'},
-        {'origem': 'q2', 'simbolo': '1', 'destino': 'q1'}
-    ]
-}
-
-resultado = fecho_kleene_afnd(afnd)
-print(resultado)
+    # Adiciona transições vazias do novo estado inicial para o estado inicial anterior e para os estados finais anteriores
+    transicoes[novo_estado] = {}
+    for estado_final in estados_finais:
+        if estado_final not in transicoes[novo_estado]:
+            transicoes[novo_estado][estado_final] = []
+        transicoes[novo_estado][estado_final].append(novo_estado)
+    if afnd.estados_iniciais not in transicoes[novo_estado]:
+        transicoes[novo_estado][afnd.estados_iniciais] = []
+    transicoes[novo_estado][afnd.estados_iniciais].append(novo_estado)
+    return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
