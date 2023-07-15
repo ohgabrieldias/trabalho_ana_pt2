@@ -208,6 +208,7 @@ def fecho_kleene(a):
     # Adiciona uma nova transição vazia do novo estado inicial para o estado inicial anterior
     estado_inicial_str = str(a.estados_iniciais)
     transicoes[estado_inicial_str] = {}
+    transicoes[estado_inicial_str][estado_inicial] = []
 
     return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
 
