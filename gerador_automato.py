@@ -186,20 +186,32 @@ def uniao_afnd(a1, a2):
 
 ##############################################################################################################
 def fecho_kleene(a):
-    estado_inicial = "s"
-    estado_final = "f"
+    estado_inicial = "s0"
+    estados_finais = [estado_inicial]
 
-    estados_finais = a.estados_finais + [estado_final]
+    conjunto_estados = a.conjunto_estados + [estado_inicial]
 
     transicoes = {}
-    transicoes[estado_inicial] = {}
-    transicoes[estado_inicial].update(a.estados_iniciais)
-    transicoes[estado_inicial][None] = [estado_final]
-    for estado in a.estados_finais:
-        if estado in a.transicoes:
-            transicoes[estado][None] = [estado_final]
+    for estado, transicoes_estado in a.transicoes.items():
+        transicoes[estado] = transicoes_estado.copy()
 
-    return AFND([estado_inicial], estados_finais, transicoes)
+    # Criar um novo dicionário para as transições do novo estado inicial
+    transicoes[estado_inicial] = {}
+
+    # Adiciona transições vazias do estado final para o estado inicial anterior e para o novo estado inicial
+    for estado_final in a.estados_finais:
+        estado_final_str = str(estado_final)
+        if estado_final_str not in transicoes:
+            transicoes[estado_final_str] = {}
+        transicoes[estado_final_str][estado_inicial] = []
+
+    # Adiciona uma nova transição vazia do novo estado inicial para o estado inicial anterior
+    estado_inicial_str = str(a.estados_iniciais)
+    transicoes[estado_inicial_str] = {}
+
+    return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
+
+
 ##############################################################################################################
 def criar_afnd_simbolo(simbolo):
     estado_inicial = "s" + str(random.randint(0, 99))
