@@ -185,32 +185,38 @@ def uniao_afnd(a1, a2):
 
 
 ##############################################################################################################
-def fecho_kleene(a):
+def fecho_kleene(afnd):
     estado_inicial = "s0"
-    estados_finais = [estado_inicial]
 
-    conjunto_estados = a.conjunto_estados + [estado_inicial]
+    conjunto_estados = afnd.conjunto_estados
 
     transicoes = {}
-    for estado, transicoes_estado in a.transicoes.items():
+    for estado, transicoes_estado in afnd.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
 
-    # Criar um novo dicionário para as transições do novo estado inicial
-    transicoes[estado_inicial] = {}
+    # Adiciona uma nova transição vazia do estado inicial para o estado final do autômato original
+    estado_final_str = "f" + str(len(conjunto_estados))
+    conjunto_estados.append(estado_final_str)
 
-    # Adiciona transições vazias do estado final para o estado inicial anterior e para o novo estado inicial
-    for estado_final in a.estados_finais:
+    transicoes[estado_inicial] = {}
+    if "ε" not in transicoes[estado_inicial]:
+        transicoes[estado_inicial]["ε"] = [estado_final_str]
+
+    # Adiciona transições vazias do estado final original para o estado inicial
+    for estado_final in afnd.estados_finais:
         estado_final_str = str(estado_final)
         if estado_final_str not in transicoes:
             transicoes[estado_final_str] = {}
-        transicoes[estado_final_str][estado_inicial] = []
+        if "ε" not in transicoes[estado_final_str]:
+            transicoes[estado_final_str]["ε"] = [estado_inicial]
 
-    # Adiciona uma nova transição vazia do novo estado inicial para o estado inicial anterior
-    estado_inicial_str = str(a.estados_iniciais)
-    transicoes[estado_inicial_str] = {}
-    transicoes[estado_inicial_str][estado_inicial] = []
+    # Adiciona transições para cada símbolo do autômato original
+    for estado in conjunto_estados:
+        for simbolo in afnd.transicoes.get(estado, {}):
+            if simbolo not in transicoes[estado]:
+                transicoes[estado][simbolo] = afnd.transicoes[estado][simbolo]
 
-    return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
+    return AFND([estado_inicial], conjunto_estados, [estado_final_str], transicoes)
 
 
 ##############################################################################################################
