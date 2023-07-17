@@ -185,65 +185,24 @@ def uniao_afnd(a1, a2):
 
 
 ##############################################################################################################
-
-def fecho_kleene(afnd):
-    estado_inicial = "s0"
-    conjunto_estados = afnd.conjunto_estados.copy()
+def fecho_kleene(a):
+    novo_estado = "s0"
+    estados_iniciais = [novo_estado]
+    conjunto_estados = [novo_estado] + a.conjunto_estados
+    
     transicoes = {}
+    transicoes[novo_estado] = {}
+    transicoes[novo_estado]["ε"] = a.estados_iniciais[0]
+    transicoes[a.estados_finais[0]] = {}
+    transicoes[a.estados_finais[0]]["ε"] = novo_estado
 
-    for estado, transicoes_estado in afnd.transicoes.items():
+    estados_finais = a.estados_finais + [novo_estado]
+
+    # Copia as transições de a para o novo autômato
+    for estado, transicoes_estado in a.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
 
-    estado_final_str = "f" + str(len(conjunto_estados))
-    conjunto_estados.append(estado_final_str)
-
-    # Adiciona transição vazia do estado inicial para o estado final
-    if "ε" not in transicoes[estado_inicial]:
-        transicoes[estado_inicial]["ε"] = [estado_final_str]
-    else:
-        transicoes[estado_inicial]["ε"].append(estado_final_str)
-
-    # Adiciona transições do estado final para o estado inicial
-    estado_final_str = "f" + str(len(conjunto_estados))
-    conjunto_estados.append(estado_final_str)
-
-    if "3" not in transicoes[estado_inicial]:
-        transicoes[estado_inicial]["3"] = [estado_final_str]
-    else:
-        transicoes[estado_inicial]["3"].append(estado_final_str)
-
-    # Adiciona transição do estado final f2 para o estado f33
-    estado_f33_str = "f" + str(len(conjunto_estados))
-    conjunto_estados.append(estado_f33_str)
-
-    if "1" not in transicoes["f2"]:
-        transicoes["f2"]["1"] = [estado_f33_str]
-    else:
-        transicoes["f2"]["1"].append(estado_f33_str)
-
-    # Adiciona transição do estado f33 para o estado inicial s0
-    if "3" not in transicoes[estado_f33_str]:
-        transicoes[estado_f33_str]["3"] = [estado_inicial]
-    else:
-        transicoes[estado_f33_str]["3"].append(estado_inicial)
-
-    estados_finais = [estado_final_str]
-
-    # Adiciona transições vazias dos estados finais originais para o estado final
-    for estado_final in afnd.estados_finais:
-        estado_final_str = str(estado_final)
-        if estado_final_str not in transicoes:
-            transicoes[estado_final_str] = {}
-        if "ε" not in transicoes[estado_final_str]:
-            transicoes[estado_final_str]["ε"] = [estado_final_str]
-
-    # Adiciona transições para cada símbolo do autômato original
-    for estado in conjunto_estados:
-        for simbolo in afnd.transicoes.get(estado, {}):
-            if simbolo not in transicoes[estado]:
-                transicoes[estado][simbolo] = afnd.transicoes[estado][simbolo]
-
-    return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
+    return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 
 
 ##############################################################################################################
@@ -317,7 +276,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(01001)"
+expressao = "(1)*"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
