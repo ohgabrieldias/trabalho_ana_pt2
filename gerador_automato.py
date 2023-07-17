@@ -145,27 +145,22 @@ def concatenacaov2(a1, a2):
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 ##############################################################################################################
-def concatenacao(a1, a2):
+##############################################################################################################
+def concatenacao2(a1, a2):
     estados_iniciais = a1.estados_iniciais
     estados_finais = a2.estados_finais
-    novo_estado = a2.estados_iniciais[0]  # Estado inicial de a2 como novo estado
-
-    conjunto_estados =  a1.conjunto_estados + a2.conjunto_estados
-    conjunto_estados.remove(a1.estados_finais[0])  # Remove o estado final de a1 do conjunto de estados
+    conjunto_estados = a1.conjunto_estados + a2.conjunto_estados
+    
 
     transicoes = {}
     for estado, transicoes_estado in a1.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
+    
+    transicoes[a1.estados_finais[0]] = {}
+    transicoes[a1.estados_finais[0]]["ε"] = a2.estados_iniciais[0]
 
     for estado, transicoes_estado in a2.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
-
-    # Atualiza a primeira transição das transições para ter o estado final de a1 como estado inicial de a2
-    for estado in transicoes:
-        for simbolo in transicoes[estado]:
-            # print(transicoes[estado][simbolo], "==" ,a1.estados_finais[0])
-            if transicoes[estado][simbolo] == [a1.estados_finais[0]]:  
-                transicoes[estado][simbolo] = [a2.estados_iniciais[0]]
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 ##############################################################################################################
@@ -247,7 +242,7 @@ def gerar_automato(arvore):
             # print_afdn(afdn_esquerdo)
             afdn_direito = gerar_automato(arvore.children[1])
             # print_afdn(afdn_direito)
-            return concatenacaov2(afdn_esquerdo,afdn_direito)
+            return concatenacao2(afdn_esquerdo,afdn_direito)
         elif arvore.value == "OU":
             afdn_esquerdo = gerar_automato(arvore.children[0])
             afdn_direito = gerar_automato(arvore.children[1])
@@ -289,7 +284,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(1)*"
+expressao = "01"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
