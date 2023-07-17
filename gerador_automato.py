@@ -204,7 +204,6 @@ def fecho_kleene(a):
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 
-
 ##############################################################################################################
 def criar_afnd_simbolo(simbolo):
     estado_inicial = "s" + str(random.randint(0, 99))
