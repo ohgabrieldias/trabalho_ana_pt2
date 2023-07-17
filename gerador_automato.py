@@ -275,7 +275,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(01)*"
+expressao = "(1)*"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
