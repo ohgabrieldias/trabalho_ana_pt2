@@ -186,30 +186,23 @@ def uniao_afnd(a1, a2):
 
 ##############################################################################################################
 def fecho_kleene(a):
-    estado_inicial = "s0"
-    estados_finais = [estado_inicial]
-
-    conjunto_estados = a.conjunto_estados + [estado_inicial]
-
+    novo_estado = "s0"
+    estados_iniciais = [novo_estado]
+    conjunto_estados = [novo_estado] + a.conjunto_estados
+    
     transicoes = {}
+    transicoes[novo_estado] = {}
+    transicoes[novo_estado]["ε"] = a.estados_iniciais[0]
+    transicoes[a.estados_finais[0]] = {}
+    transicoes[a.estados_finais[0]]["ε"] = novo_estado
+
+    estados_finais = a.estados_finais + [novo_estado]
+
+    # Copia as transições de a para o novo autômato
     for estado, transicoes_estado in a.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
 
-    # Criar um novo dicionário para as transições do novo estado inicial
-    transicoes[estado_inicial] = {}
-
-    # Adiciona transições vazias do estado final para o estado inicial anterior e para o novo estado inicial
-    for estado_final in a.estados_finais:
-        estado_final_str = str(estado_final)
-        if estado_final_str not in transicoes:
-            transicoes[estado_final_str] = {}
-        transicoes[estado_final_str][estado_inicial] = []
-
-    # Adiciona uma nova transição vazia do novo estado inicial para o estado inicial anterior
-    estado_inicial_str = str(a.estados_iniciais)
-    transicoes[estado_inicial_str] = {}
-
-    return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
+    return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 
 
 ##############################################################################################################
@@ -283,7 +276,7 @@ def print_tree(node, level=0):
         print("  " * level + node)
 
 # Teste o lexer e parser
-expressao = "(01001)"
+expressao = "(01)*"
 lexer.input(expressao)
 # for token in lexer:
 #     print(token)
