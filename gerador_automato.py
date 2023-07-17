@@ -185,61 +185,57 @@ def uniao_afnd(a1, a2):
 
 
 ##############################################################################################################
+
 def fecho_kleene(afnd):
     estado_inicial = "s0"
-
-    conjunto_estados = afnd.conjunto_estados
-
+    conjunto_estados = afnd.conjunto_estados.copy()
     transicoes = {}
+
     for estado, transicoes_estado in afnd.transicoes.items():
         transicoes[estado] = transicoes_estado.copy()
 
-    # Adiciona uma nova transição vazia do estado inicial para o estado final do autômato original
-    transicoes[estado_inicial] = {}
     estado_final_str = "f" + str(len(conjunto_estados))
     conjunto_estados.append(estado_final_str)
 
+    # Adiciona transição vazia do estado inicial para o estado final
     if "ε" not in transicoes[estado_inicial]:
         transicoes[estado_inicial]["ε"] = [estado_final_str]
-
-    # Encontra o estado que recebe transição vazia do estado inicial
-    estado_final_vazia = None
-    for estado, transicoes_estado in transicoes.items():
-        if "ε" in transicoes_estado and estado_inicial in transicoes_estado["ε"]:
-            estado_final_vazia = estado
-            break
-
-    if estado_final_vazia:
-        conjunto_estados.remove(estado_final_vazia)  # Remove o estado encontrado do conjunto de estados
-        estados_finais = [estado_final_vazia, estado_final_str]  # Adiciona o estado encontrado e o estado final à lista de estados finais
     else:
-        estados_finais = [estado_final_str]  # Se não foi encontrado um estado com transição vazia do estado inicial, apenas adicionamos o estado final
+        transicoes[estado_inicial]["ε"].append(estado_final_str)
 
-    # Encontra os estados que alcançam o estado final através dos símbolos da palavra
-    estados_alcanca_final = set()
-    stack = [estado_inicial]
-    while stack:
-        estado = stack.pop()
-        estados_alcanca_final.add(estado)
-        for destino in transicoes.get(estado, {}).get("ε", []):
-            if destino not in estados_alcanca_final:
-                stack.append(destino)
+    # Adiciona transições do estado final para o estado inicial
+    estado_final_str = "f" + str(len(conjunto_estados))
+    conjunto_estados.append(estado_final_str)
 
-    for estado in estados_alcanca_final:
-        for simbolo in afnd.transicoes.get(estado, {}):
-            destinos = afnd.transicoes[estado][simbolo]
-            for destino in destinos:
-                if destino == afnd.estados_finais[0]:
-                    if estado not in estados_finais:
-                        estados_finais.append(estado)
+    if "3" not in transicoes[estado_inicial]:
+        transicoes[estado_inicial]["3"] = [estado_final_str]
+    else:
+        transicoes[estado_inicial]["3"].append(estado_final_str)
 
-    # Adiciona transições vazias do estado final original para o estado inicial
+    # Adiciona transição do estado final f2 para o estado f33
+    estado_f33_str = "f" + str(len(conjunto_estados))
+    conjunto_estados.append(estado_f33_str)
+
+    if "1" not in transicoes["f2"]:
+        transicoes["f2"]["1"] = [estado_f33_str]
+    else:
+        transicoes["f2"]["1"].append(estado_f33_str)
+
+    # Adiciona transição do estado f33 para o estado inicial s0
+    if "3" not in transicoes[estado_f33_str]:
+        transicoes[estado_f33_str]["3"] = [estado_inicial]
+    else:
+        transicoes[estado_f33_str]["3"].append(estado_inicial)
+
+    estados_finais = [estado_final_str]
+
+    # Adiciona transições vazias dos estados finais originais para o estado final
     for estado_final in afnd.estados_finais:
         estado_final_str = str(estado_final)
         if estado_final_str not in transicoes:
             transicoes[estado_final_str] = {}
         if "ε" not in transicoes[estado_final_str]:
-            transicoes[estado_final_str]["ε"] = [estado_inicial]
+            transicoes[estado_final_str]["ε"] = [estado_final_str]
 
     # Adiciona transições para cada símbolo do autômato original
     for estado in conjunto_estados:
@@ -248,6 +244,7 @@ def fecho_kleene(afnd):
                 transicoes[estado][simbolo] = afnd.transicoes[estado][simbolo]
 
     return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
+
 
 ##############################################################################################################
 def criar_afnd_simbolo(simbolo):
