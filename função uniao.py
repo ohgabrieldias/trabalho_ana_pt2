@@ -8,7 +8,9 @@ def uniao_afnd(a1, a2):
     transicoes[novo_estado_inicial] = {'ε': [a1.estados_iniciais[0], a2.estados_iniciais[0]]}  # Transições vazias do estado inicial para os iniciais de a1 e a2
 
     for estado, transicoes_estado in a1.transicoes.items():
-        if estado not in a1.estados_finais:
+        if estado in transicoes:
+            transicoes[estado].update(transicoes_estado)
+        else:
             transicoes[estado] = transicoes_estado.copy()
 
     for estado, transicoes_estado in a2.transicoes.items():
