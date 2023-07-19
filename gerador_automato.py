@@ -2,11 +2,9 @@ import os
 import random
 import ply.lex as lex
 import ply.yacc as yacc
+import tkinter as tk
+from tkinter import filedialog
 
-# Variáveis globais
-afdn1 = None
-afdn2 = None
-afdnResul = None
 # Defina t lista de nomes dos tokens
 tokens = (
     'SIMBOLO',
@@ -147,21 +145,35 @@ def concatenacaov2(a1, a2):
 ##############################################################################################################
 ##############################################################################################################
 def concatenacao2(a1, a2):
-    estados_iniciais = a1.estados_iniciais
-    estados_finais = a2.estados_finais
-    conjunto_estados = a1.conjunto_estados + a2.conjunto_estados
-    
+    estados_iniciais = a1.estados_iniciais  # Estado inicial de a1 como novo estado
+    estados_finais = a2.estados_finais  # Estado final de a2 como novo estado
+    conjunto_estados = a1.conjunto_estados + a2.conjunto_estados    #adiciona os estados de a1 e a2 no conjunto de estados
+    print_afdn(a1)
 
-    transicoes = {}
+    transicoes = {} #cria um dicionario para as transicoes
     for estado, transicoes_estado in a1.transicoes.items():
-        transicoes[estado] = transicoes_estado.copy()
-    
-    transicoes[a1.estados_finais[0]] = {}
-    transicoes[a1.estados_finais[0]]["ε"] = a2.estados_iniciais[0]
-
+        transicoes[estado] = transicoes_estado.copy()   #Copia as transições de a1 para o novo autômato
     for estado, transicoes_estado in a2.transicoes.items():
-        transicoes[estado] = transicoes_estado.copy()
+        transicoes[estado] = transicoes_estado.copy()   #Copia as transições de a2 para o novo autômato
 
+    if(len(a1.estados_finais) > 1): #se o estado final de a1 for maior que 1 significa que a1 é uma união de estados
+        print("len(a1.estados_finais) > 1")
+        for estado in a1.estados_finais:   #percorre os estados finais de a1
+            transicoes[estado] = {} #cria um dicionario para as transições que antes nao existia
+            transicoes[estado]["ε"] = a2.estados_iniciais[0] #adiciona a transição vazia para o estado inicial de a2 à lista de transições
+
+    elif(a2.estados_iniciais[0] == a2.estados_finais[0]): #se o estado inicial de a2 for igual ao estado final de a2 significa que *(Kleene) foi usado
+        print("a2.estados_iniciais[0] == a2.estados_finais[0]")
+        transicoes[a1.estados_finais[0]] = {}   #sobreescreve o estado final de a1
+        transicoes[a1.estados_finais[0]]["ε"] = a2.estados_iniciais[0]
+
+    elif(a1.estados_finais[0] == 's0'): #se o estado final de a1 for = s0 significa que a1 tem fecho de kleene
+        print("a1.estados_finais[0] == 's0'")
+        transicoes[a1.estados_finais[0]]["ε"] = [transicoes[a1.estados_finais[0]]["ε"]]
+        transicoes[a1.estados_finais[0]]["ε"].append(a2.estados_iniciais[0]) #Adiciona nova transição vai para o estado inicial de a2
+    else:
+        transicoes[a1.estados_finais[0]] = {}   #sobreescreve o estado final de a1
+        transicoes[a1.estados_finais[0]]["ε"] = a2.estados_iniciais[0]
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 ##############################################################################################################
 def uniao_afnd(a1, a2):
@@ -191,8 +203,6 @@ def uniao_afnd(a1, a2):
     transicoes[a2.estados_finais[0]] = {'ε': [estados_finais[0]]}  # ε-tarnsição do estado final de a2 para o novo estado final
 
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
-
-
 ##############################################################################################################
 def fecho_kleene(a):
     novo_estado = "s0"
@@ -205,7 +215,7 @@ def fecho_kleene(a):
     transicoes[a.estados_finais[0]] = {}
     transicoes[a.estados_finais[0]]["ε"] = novo_estado
 
-    estados_finais = a.estados_finais + [novo_estado]
+    estados_finais = [novo_estado]
 
     # Copia as transições de a para o novo autômato
     for estado, transicoes_estado in a.transicoes.items():
@@ -214,16 +224,27 @@ def fecho_kleene(a):
     return AFND(estados_iniciais, conjunto_estados, estados_finais, transicoes)
 
 ##############################################################################################################
+conjunto_estados_utilizados = set()
+
 def criar_afnd_simbolo(simbolo):
-    estado_inicial = "s" + str(random.randint(0, 99))
-    estado_final = "f" + str(random.randint(0, 99))
-    conjunto_estados = [estado_inicial, estado_final]
-    estados_finais = [estado_final]
+    global conjunto_estados_utilizados
+
+    while True:
+        estado_inicial = "s" + str(random.randint(1, 99))
+        estado_final = "f" + str(random.randint(0, 99))
+        conjunto_estados = [estado_inicial, estado_final]
+        estados_finais = [estado_final]
+
+        if estado_inicial not in conjunto_estados_utilizados and estado_final not in conjunto_estados_utilizados:
+            break
+
+    conjunto_estados_utilizados.add(estado_inicial)
+    conjunto_estados_utilizados.add(estado_final)
 
     transicoes = {}
     transicoes[estado_inicial] = {}
     transicoes[estado_inicial][simbolo] = [estado_final]
-    return AFND([estado_inicial],conjunto_estados, estados_finais, transicoes)
+    return AFND([estado_inicial], conjunto_estados, estados_finais, transicoes)
 ##### printa AFDN ############################################################################################
 def print_afdn(afnd):
     print("Estados Iniciais(s):", afnd.estados_iniciais)
@@ -256,12 +277,12 @@ def gerar_automato(arvore):
     return None
 
 ##############################################################################################################
-def save_afdn_to_file(afnd, filename):
-    current_directory = os.getcwd()
-    file_path = os.path.join(current_directory, filename)
-    with open(file_path, 'w') as file:
+def salvar_afdn_para_arquivo(afnd, filename):
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_directory, filename)
+    with open(file_path, 'w', encoding='utf-8') as file:
         file.write("M = (K, Σ, δ, s, F)\n")
-        file.write("M = (K"+ str(afnd.conjunto_estados)+", Σ[0,1], δ, s"+ str(afnd.estados_iniciais)+", F"+ str(afnd.estados_finais)+")\n")
+        file.write("M = (K" + str(afnd.conjunto_estados) + ", Σ[0,1], δ, s" + str(afnd.estados_iniciais) + ", F" + str(afnd.estados_finais) + ")\n")
         file.write("Transições (δ):\n")
         for estado, transicoes in afnd.transicoes.items():
             for simbolo, destinos in transicoes.items():
@@ -270,9 +291,26 @@ def save_afdn_to_file(afnd, filename):
         file.write("Conjunto de estados Iniciais(s): " + str(afnd.estados_iniciais) + "\n")
         file.write("Conjunto de estados Finais (F): " + str(afnd.estados_finais) + "\n")
         file.write("Conjunto de estados (K): " + str(afnd.conjunto_estados) + "\n")
-       
-     
+##############################################################################################################
+def ler_expressao_do_arquivo():
+    root = tk.Tk()
+    root.withdraw()
 
+    caminho_arquivo = filedialog.askopenfilename(title="Selecionar arquivo", filetypes=[("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")])
+    
+    if not caminho_arquivo:
+        print("Nenhum arquivo selecionado. Saindo...")
+        return None, None
+
+    try:
+        with open(caminho_arquivo, 'r') as arquivo:
+            expressao = arquivo.read()
+            nome_arquivo = os.path.basename(caminho_arquivo)  # Extrai o nome do arquivo do caminho completo
+            nome_saida_arquivo = "automato_" + nome_arquivo  # Forma o nome do arquivo de saída
+            return expressao.strip(), nome_saida_arquivo
+    except FileNotFoundError:
+        print("Arquivo não encontrado. Certifique-se de que o caminho do arquivo está correto.")
+        return None, None
 ##############################################################################################################
 # Função auxiliar para imprimir a árvore sintática
 def print_tree(node, level=0):
@@ -283,14 +321,17 @@ def print_tree(node, level=0):
     else:
         print("  " * level + node)
 
-# Teste o lexer e parser
-expressao = "01"
-lexer.input(expressao)
-# for token in lexer:
-#     print(token)
+def main():
+    expressao, nome_saida_arquivo = ler_expressao_do_arquivo()
+    if expressao:
+        lexer.input(expressao)
+        resultado = parser.parse(expressao)
+        automato = gerar_automato(resultado)
+        print_afdn(automato)
+        if nome_saida_arquivo:
+            # Remove a extensão .txt do nome_saida_arquivo antes de salvar
+            nome_saida_arquivo = os.path.splitext(nome_saida_arquivo)[0]
+            salvar_afdn_para_arquivo(automato, nome_saida_arquivo)
 
-resultado = parser.parse(expressao)
-# print_tree(resultado)
-automato = gerar_automato(resultado)
-print_afdn(automato)
-save_afdn_to_file(automato, "automato.txt")
+if __name__ == "__main__":
+    main()
